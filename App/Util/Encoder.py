@@ -6,7 +6,7 @@ def OneHotEncoder(tokens = []):
     else:
         tokensUnicos = list(set(tokens))
         indicesTokens = {categoria: i for i, categoria in enumerate(tokensUnicos)}
-
+        
         oneHotEncoded = np.zeros((len(tokens), len(tokensUnicos)))
         for i, categoria in enumerate(tokens):
             indice = indicesTokens[categoria]
