@@ -21,10 +21,12 @@ documento = "Hola mundo alegre mundo"
 # -- Tokenizar Texto -- #
 # Se trata de eliminar todo aquello que no necesites para procesar el texto.
 tokens = (re.sub(EXP_REGULAR_TOKENS, ' ', documento.strip())).split(' ')
+print(tokens)
 
 # Se elimina todas las palabras en blanco
 tokens = [token for token in tokens if token != '']
 oneHotEncoded = OneHotEncoder(tokens)
+print(oneHotEncoded)
 
 # Recordar que nuestra salida debe ser la palabra siguiente de cada palabra
 X = oneHotEncoded[:-1]
