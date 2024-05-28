@@ -1,13 +1,9 @@
 from App.Util.FuncionesActivacion import *
+import matplotlib.pyplot as plt
 import numpy as np
 
 class LSTM:
     TIEMPO_INICIAL = -1
-    COMPONENTE_PUERTA_ENTRADA = 1 # También conocido como puerta actualizar
-    COMPONENTE_PUERTA_OLVIDO = 2
-    COMPONENTE_CANDIDATO = 3
-    COMPONENTE_PUERTA_SALIDA = 4
-
     # ----------------------------------------
     #   Estructura datos de entrada y salida
     # ----------------------------------------
@@ -16,16 +12,10 @@ class LSTM:
     # tam_salida: (num_entradas, tam_entrada)
     #
     # ----------------------------------------
-    #              Capas ocultas
-    # ----------------------------------------
-    #
-    # tam_capa_oculta: las capas internas de la red neuronal
-    #
-    # ----------------------------------------
     #                  Epocas
     # ----------------------------------------
     #
-    # epocas: Pasos en el tiempo
+    # epocas: Pasos en el tiempo que será retroalimentado el modelo
     #
     # ----------------------------------------
     #                   Cache
@@ -36,32 +26,38 @@ class LSTM:
     # Esta información no va a servir para el 
     # backpropagation. (a, c, y)
     #
-    def __init__(self, tam_entrada=(1, 1), tam_salida=(1, 1), tam_oculto=1, epocas=100, rango_aprendizaje=0.5):
-        self.componentes = [
-            self.COMPONENTE_PUERTA_ENTRADA,
-            self.COMPONENTE_PUERTA_OLVIDO,
-            self.COMPONENTE_CANDIDATO,
-            self.COMPONENTE_PUERTA_SALIDA
-        ]
-        self.t = 0 # El contador de los pasos en el tiempo
+    def __init__(self, tam_entrada=(1, 1), tam_salida=(1, 1), tam_oculto=(1, 1), epocas=100):
+        self.cache = []
+        self.T = self.TIEMPO_INICIAL # Contador de los pasos en el tiempo
         self.epocas = epocas
-        self.rango_aprendizaje = rango_aprendizaje
+        
+        self.tam_entrada  = tam_entrada
+        self.tam_salida  = tam_salida
+        
+        n_x, m = tam_entrada
+        n_a, _ = tam_oculto
+        n_y, _ = tam_salida
 
-        self.w = self.inicializacionXavierGlorot(tam_entrada[1], tam_entrada[0]) # Pesos
-        self.b = self.inicializacionXavierGlorot(tam_entrada[1], 1) # Sesgos
-
-        self.h = { self.TIEMPO_INICIAL: self.inicializacionXavierGlorot(tam_entrada[0], tam_entrada[1]) } # Estado oculto
-        self.c = { self.TIEMPO_INICIAL: self.inicializacionXavierGlorot(tam_entrada[0], tam_entrada[1]) } # Celda
-
-        self.Ws = {} # Pesos de entrada
-        self.Rs = {} # Pesos recurrentes
-        self.bs = {} # sesgos
-
-        for componente in self.componentes: # Inicialización con la tecnica de Xavier Normalized
-            self.inicializaPesosEntrada(componente, (tam_oculto, tam_entrada[0]))
-            self.inicializarPesosRecurrentes(componente, (tam_oculto, tam_entrada[0]))
-            self.inicializarSesgos(componente, (tam_oculto, 1))
-    
+        # Puerta Entrada / Actualizar
+        self.Wi = self.inicializacionXavierGlorot((n_a, n_a + n_x))
+        self.bi = np.zeros((n_a, 1))
+        # Puerta Olvido
+        self.Wf = self.inicializacionXavierGlorot((n_a, n_a + n_x))
+        self.bf = np.zeros((n_a, 1))
+        # Puerta Candidato
+        self.Wc = self.inicializacionXavierGlorot((n_a, n_a + n_x))
+        self.bc = np.zeros((n_a, 1))
+        # Puerta Salida
+        self.Wo = self.inicializacionXavierGlorot((n_a, n_a + n_x))
+        self.bo = np.zeros((n_a, 1))
+        # Predicción
+        self.Wy = self.inicializacionXavierGlorot((n_y, n_a))
+        self.by = np.zeros((n_y, 1))
+        # Estado Oculto
+        self.h = { self.T: np.zeros((n_a, m)) }
+        # Estado Celda
+        self.c = { self.T: np.zeros((n_a, m)) }
+        
     # -------------------------------
     #         Inicialización
     # -------------------------------
@@ -70,74 +66,133 @@ class LSTM:
     # problema de la convergencia lenta o inistable
     # que puede llegar a ocurrir al entrenar redes neuronales.
     #
-    def inicializacionXavierGlorot(self, tamEntrada = 1, tamSalida = 1, incluirPasosEnElTiempo = False):
-        varianza = np.sqrt(2.0 / (tamEntrada + tamSalida))
-        if(incluirPasosEnElTiempo):
-            return np.random.normal(0, varianza, size=(self.epocas, tamEntrada, tamSalida))
-        else:
-            return np.random.normal(0, varianza, size=(tamEntrada, tamSalida))
+    def inicializacionXavierGlorot(self, dimension=(1, 1)):
+        varianza = np.sqrt(2.0 / (dimension[0] + dimension[1]))
+        return np.random.normal(0, varianza, size=dimension)
+
+    def ejecutarPuertaEntrada(self, x_t: np.ndarray):
+        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        return logistic_hidden(self.Wi @ concat + self.bi)
+
+    def ejecutarPuertaOlvido(self, x_t: np.ndarray):
+        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        return logistic_hidden(self.Wf @ concat + self.bf)
+
+    def ejecutarCandidato(self, x_t: np.ndarray):
+        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        return tanh(self.Wc @ concat + self.bc)
+
+    def ejecutarPuertaSalida(self, x_t: np.ndarray):
+        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        return logistic_hidden(self.Wo @ concat + self.bo)
         
-    def inicializaPesosEntrada(self, componente=None, tam=(1,1)):
-        self.Ws[componente] = self.inicializacionXavierGlorot(tam[0], tam[1])
-
-    def inicializarPesosRecurrentes(self, componente=None, tam=(1,1)):
-        self.Rs[componente] = self.inicializacionXavierGlorot(tam[0], tam[1])
-
-    def inicializarSesgos(self, componente=None, tam=(1,1)):
-        self.bs[componente] = self.inicializacionXavierGlorot(tam[0], tam[1])
-
-    def ejecutarPuertaEntrada(self, X: np.ndarray):
-        return logistic(
-            self.Ws[self.COMPONENTE_PUERTA_ENTRADA] @ X +
-            self.Rs[self.COMPONENTE_PUERTA_ENTRADA] @ self.h[self.t - 1] +
-            self.bs[self.COMPONENTE_PUERTA_ENTRADA]
-        )
-
-    def ejecutarPuertaOlvido(self, X: np.ndarray):
-        if(self.t > 0): return
+    def celdaAdelante(self, x_t: np.ndarray):
+        f_t = self.ejecutarPuertaOlvido(x_t)        # Valor de la puerta de olvido en el paso t
+        i_t = self.ejecutarPuertaEntrada(x_t)       # Valor de la puerta de entrada/actualizacion en el paso t
+        cc_t = self.ejecutarCandidato(x_t)          # Valor de la puerta candidata en el paso t
+        o_t = self.ejecutarPuertaSalida(x_t)        # Valor de la puerta de salida en el paso t
+        c_t = self.c[self.T - 1] * f_t + i_t * cc_t # Valor de celda en el paso t
+        h_t = c_t * tanh(o_t)                       # Valor de estado oculto en el paso t
+        y_pred = softmax(self.Wy @ h_t + self.by)   # Valor predicción
         
-        print(X @ self.Ws[self.COMPONENTE_PUERTA_OLVIDO].T)
-        print(self.Rs[self.COMPONENTE_PUERTA_OLVIDO])
-        print(self.h[self.t - 1])
+        self.h[self.T] = h_t
+        self.c[self.T] = c_t
+        
+        self.cache.append((h_t, c_t, self.h[self.T - 1], self.c[self.T - 1], f_t, i_t, cc_t, o_t, x_t))
+        return y_pred
+    
+    def celdaAtras(self, dy: np.ndarray, dh_next: np.ndarray, dc_next: np.ndarray):
+        h_next, c_next, h_prev, c_prev, f_t, i_t, cc_t, o_t, x_t = self.cache.pop()
+        
+        do = dh_next * tanh(c_next) * o_t * (1 - o_t)
+        dcc = (dc_next * i_t + o_t * (1 - tanh(cc_t)**2) * i_t * dh_next) * (1 - cc_t**2)
+        di = (dc_next * cc_t + o_t * (1 - tanh(cc_t)**2) * cc_t * dh_next) * i_t * (1 - i_t)
+        df = (dc_next * c_prev + o_t * (1 - tanh(cc_t)**2) * c_prev * dh_next) * f_t * (1 - f_t)
+        
+        dWo = np.dot(do, np.concatenate((h_prev, x_t)).T)
+        dbo = np.sum(do, axis=1, keepdims=True)
+        
+        dWc = np.dot(dcc, np.concatenate((h_prev, x_t)).T)
+        dbc = np.sum(dcc, axis=1, keepdims=True)
+        
+        dWi = np.dot(di, np.concatenate((h_prev, x_t)).T)
+        dbi = np.sum(di, axis=1, keepdims=True)
+        
+        dWf = np.dot(df, np.concatenate((h_prev, x_t)).T)
+        dbf = np.sum(df, axis=1, keepdims=True)
+        
+        dWy = np.dot(dy, h_next.T)
+        dby = np.sum(dy, axis=1, keepdims=True)
+        
+        d_concat = (np.dot(self.Wf.T, df) + np.dot(self.Wi.T, di) + np.dot(self.Wc.T, dcc) + np.dot(self.Wo.T, do))
+        dh_prev = d_concat[:self.h[self.T].shape[0], :]
+        dx = d_concat[self.h[self.T].shape[0]:, :]
+        
+        return dWf, dbf, dWi, dbi, dWc, dbc, dWo, dbo, dWy, dby, dh_prev, dx
+
+    def fit(self, X: np.ndarray, y: np.ndarray, factor_aprendizaje = 0.001):
+        palabras, _ = X.shape
+        n_x, _ = self.tam_entrada
+        T = palabras // n_x
+        
+        perdidas = []
+        
+        for epoca in range(self.epocas): # Retroalimentación
+            self.T = 0
+            total_loss = 0
             
-        return logistic(
-            self.Ws[self.COMPONENTE_PUERTA_OLVIDO] @ X +
-            self.Rs[self.COMPONENTE_PUERTA_OLVIDO] @ self.h[self.t - 1] +
-            self.bs[self.COMPONENTE_PUERTA_OLVIDO]
-        )
-
-    def ejecutarCandidato(self, X: np.ndarray):
-        return tanh(
-            self.Ws[self.COMPONENTE_CANDIDATO] @ X +
-            self.Rs[self.COMPONENTE_CANDIDATO] @ self.h[self.t - 1] +
-            self.bs[self.COMPONENTE_CANDIDATO]
-        )
-
-    def ejecutarPuertaSalida(self, X: np.ndarray):
-        return logistic(
-            self.Ws[self.COMPONENTE_PUERTA_SALIDA] @ X +
-            self.Rs[self.COMPONENTE_PUERTA_SALIDA] @ self.h[self.t - 1] +
-            self.bs[self.COMPONENTE_PUERTA_SALIDA]
-        )
+            for t in range(0, T, n_x):
+                x_t = X[t:(t + n_x),:]
+                y_t = y[t,:]
+                
+                y_pred = self.celdaAdelante(x_t)
+                
+                loss = -np.sum(y_t * np.log(y_pred))
+                total_loss += loss
+                
+                dy = y_pred - y_t
+                dh_next = np.zeros_like(self.h[self.T])
+                dc_next = np.zeros_like(self.c[self.T])
+                
+                dWf, dbf, dWi, dbi, dWc, dbc, dWo, dbo, dWy, dby, dh_next, dx = self.celdaAtras(dy, dh_next, dc_next)
+                
+                self.Wf -= factor_aprendizaje * dWf
+                self.bf -= factor_aprendizaje * dbf
+                self.Wi -= factor_aprendizaje * dWi
+                self.bi -= factor_aprendizaje * dbi
+                self.Wc -= factor_aprendizaje * dWc
+                self.bc -= factor_aprendizaje * dbc
+                self.Wo -= factor_aprendizaje * dWo
+                self.bo -= factor_aprendizaje * dbo
+                self.Wy -= factor_aprendizaje * dWy
+                self.by -= factor_aprendizaje * dby
+                
+                self.T += 1
+            
+            avg_loss = total_loss / T
+            perdidas.append(avg_loss)
+            print(f"Epoca {epoca + 1}/{self.epocas}, Pérdida: {avg_loss}")
+            
+        plt.plot(perdidas)
+        plt.xlabel("Época")
+        plt.ylabel("Pérdida")
+        plt.title("Pérdida durante el Entrenamiento")
+        plt.show()
+            
+    def prediccion(self, X: np.ndarray):
+        n_x, _ = self.tam_entrada
+        T = X.shape[0] // n_x
         
-    def celdaAdelante(self, X: np.ndarray):
-        f_t = self.ejecutarPuertaOlvido(X) # Valor de la puerta de olvido en el paso t
-        # print(f_t)
-        # i_t = self.ejecutarPuertaEntrada(X) # Valor de la puerta de entrada/actualizacion en el paso t
-        # g_t = self.ejecutarCandidato(X) # Valor de la puerta candidata en el paso t
-        # o_t = self.ejecutarPuertaSalida(X) # Valor de la puerta de salida en el paso t
-        # c_t = self.c[self.t - 1] * f_t + i_t * g_t # Valor de celda en el paso t
-        # a_t = c_t * tanh(o_t) # Valor de estado oculto en el paso t
-        # y_t = softmax(self.w @ a_t + self.b) # Valor predicción
+        self.T = 0
+        self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
+        self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
         
-        # cache = (a_t, c_t, self.h[self.t - 1], self.c[self.t - 1], f_t, i_t, g_t, o_t, X)
-        # return a_t, c_t, y_t, cache
-
-    def fit(self, X: np.ndarray, y: np.ndarray):
-        tiempo = X.shape[0]
-
-        for _ in range(self.epocas):
-            for t in range(tiempo):
-                self.t = t
-                x_t = X[self.t,:].reshape(1, -1)
-                self.celdaAdelante(x_t)
+        predicciones = []
+        
+        for t in range(T):
+            x_t = X[t:(t + n_x),:]
+            y_pred = self.celdaAdelante(x_t)
+            predicciones.append(y_pred)
+            self.T += 1
+            
+        return np.array(predicciones)

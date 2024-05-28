@@ -1,39 +1,35 @@
 import numpy as np
-import sys
+from App.Util.FuncionesActivacion import *
 
-# Recuperamos el texto y lo convertimos a mayusculas.
-raw_text = open('./los3.txt').read()
-raw_text = raw_text.lower()
-# print(raw_text)
+x_t = np.asanyarray([
+    [0, 0, 1],
+    [0, 1, 0],
+    [1, 0, 0]
+])
+n_x, m = x_t.shape
+n_a = 1
 
-# Obtenemos todos los caracteres diferentes en una lista ordenada.
-chars = sorted(list(set(raw_text)))
-# print(chars)
+a_prev = np.zeros((n_a, m))
+c_prev = np.zeros((n_a, m))
+w_f = np.zeros((n_a, n_x + n_a))
+b_f = np.zeros((n_a, 1))
 
-# Crea un dicccionario (clave, valor) para representar cada letra del vocabulario.
-chars_to_int = dict((c, i) for i, c in enumerate(chars))
-# print(chars_to_int)
+print(f"n_x: {x_t.shape[0]}, m: {x_t.shape[1]}")
+print(f"n_a: {a_prev.shape[0]}, m: {a_prev.shape[1]}")
+print(x_t)
+print(a_prev)
+print(w_f)
+print(b_f)
+print('----------------------')
 
-# Se muestra la cuenta del total de caractes y los caracteres diferentes.
-n_chars = len(raw_text)
-n_vocab = len(chars)
-# print(n_chars)
-# print(n_vocab)
+concat = np.concatenate((a_prev, x_t), axis=0)
+print(concat)
+ft = softmax(w_f @ concat + b_f)
+print(ft)
 
-seq_length = 100
-dataX = []
-dataY = []
-
-for i in range(0, n_chars - seq_length, 1):
-    seq_in = raw_text[i:i + seq_length]
-    seq_out = raw_text[i + seq_length]
-    dataX.append([chars_to_int[char] for char in seq_in])
-    dataY.append(chars_to_int[seq_out])
-n_patterns = len(dataX)
-# print("Total patrones: ", n_patterns)
-
-# remodelar X para que sea [muestras, pasos de tiempo, características]
-X = np.reshape(dataX, (n_patterns, seq_length, 1))
-# normalizacion
-X = X / float(n_vocab)
-print(X)
+# x = np.array([[1, 0, 1, 1],
+#               [1, 1, 0, 1]])
+# wy = np.array([[1, 1],
+#                [2, 2]])
+# by = np.array([[1]])
+# y = wy @ x + by

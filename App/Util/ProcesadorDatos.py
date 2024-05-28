@@ -10,8 +10,8 @@ def train_test_split(X, y, test_size = 0.1):
 
     if(test_size != None):
         indiceFinal = math.ceil(tamX * test_size)
-        x_train = X[:(-1 * indiceFinal)]
-        y_train = y[:(-1 * indiceFinal)]
+        x_train = X[:(tamX - indiceFinal + 1)]
+        y_train = y[:(tamY - indiceFinal + 1)]
         x_test = X[(tamX - indiceFinal):]
         y_test = y[(tamY - indiceFinal):]
     else:
