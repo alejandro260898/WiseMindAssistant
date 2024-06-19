@@ -1,48 +1,73 @@
 import re
 import numpy as np
 from tqdm import tqdm
-from App.Util.Encoder import OneHotEncoder
-from App.Util.ProcesadorDatos import train_test_split
-from App.Controller.LSTM import LSTM
+from app.util.Encoder import OneHotEncoder
+from app.util.ProcesadorDatos import train_test_split
+from app.controller.LSTM import LSTM
 
-EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,]'
-NUM_EPOCAS = 4000
-FACTORA_APRENDIZAJE = 0.080
-PALABRAS_ENTRADA = 1
+EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,\(\)0-9\"\']'
+NUM_EPOCAS = 5
+FACTORA_APRENDIZAJE = 0.001
+PALABRAS_ENTRADA = 10
 PALABRAS_PREDICCION = 1
-CELDAS_MEMORIA = 30
+CELDAS_MEMORIA = 10
 
-documento = """
-    Los manzanos se cultivan en todo el mundo y son las especies más utilizadas del género Malus.
-    El árbol se originó en Asia Central, donde su ancestro salvaje, Malus sieversii, todavía se encuentra hoy en día.
-    Las manzanas se han cultivado durante miles de años en Asia y Europa y fueron llevadas a América por colonos europeos.
-    Las manzanas tienen un significado religioso y mitológico en muchas culturas, incluyendo la tradición nórdica, griega y cristiana europea.
-"""
+def generar_secuencias(X: np.ndarray, n: int):
+    secuenciasEntrada = {}
+    secuenciasSalida = {}
+    
+    for t in range(len(X) - n):
+        secuenciasEntrada[t] = X[t:t+n]
+        secuenciasSalida[t] = X[t+n]
+    return secuenciasEntrada, secuenciasSalida
 
-# -- Tokenizar Texto -- #
-# Se trata de eliminar todo aquello que no necesites para procesar el texto.
-tokens = (re.sub(EXP_REGULAR_TOKENS, ' ', documento.strip())).split(' ')
+def adaptarTexto(data: str):
+    # -- Tokenizar Texto -- #
+    # Se trata de eliminar todo aquello que no necesites para procesar el texto.
+    tokens = re.sub(EXP_REGULAR_TOKENS, ' ', data.strip())
+    tokens = re.findall(r'\b\w+\b|[^\w\s]', tokens)
+    
+    # Se elimina todas las palabras en blanco
+    tokens = [token for token in tokens if token != '']
+    print(f"Total de palabras: {len(tokens)}")
+    
+    return tokens
 
-# Se elimina todas las palabras en blanco
-tokens = [token for token in tokens if token != '']
+
+
+with open('data.txt', 'r', encoding='utf-8') as archivo:
+    documento = archivo.read()
+
+# Define el tamaño de la secuencia de entrada
+tokens = adaptarTexto(documento)
 indice_a_palabra = {i: token for i, token in enumerate(tokens)}
-oneHotEncoded = OneHotEncoder(tokens)
+X = OneHotEncoder(tokens)
+n, m = X.shape
 
 # Recordar que nuestra salida debe ser la palabra siguiente de cada palabra
-X = oneHotEncoded[:-1]
-y = oneHotEncoded[1:]
-_, m = X.shape
-
-x_train, y_train, x_test, y_test = train_test_split(X, y)
+X, y = generar_secuencias(X, PALABRAS_ENTRADA)
+# x_train, y_train, x_test, y_test = train_test_split(X, y)
 
 lstm = LSTM(
     (PALABRAS_ENTRADA, m),
     (PALABRAS_PREDICCION, m),
     (CELDAS_MEMORIA, m),
     NUM_EPOCAS
-) 
-lstm.fit(x_train, y_train, FACTORA_APRENDIZAJE)
+)
+lstm.fit(X, y, FACTORA_APRENDIZAJE)
 
-preds = lstm.prediccion(x_test)
+tokens = adaptarTexto("¿Qué es Dark Souls?")
+X = OneHotEncoder(tokens)
+
+preds = lstm.prediccion(X)
+print(preds.shape[0])
+print(preds.shape[1])
 indices = np.argmax(preds, axis=0)
 print(indices)
+
+print(indice_a_palabra[1])
+print(indice_a_palabra[0])
+print(indice_a_palabra[5])
+print(indice_a_palabra[5])
+print(indice_a_palabra[5])
+print(indice_a_palabra[3])

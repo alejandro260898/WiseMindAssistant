@@ -1,4 +1,4 @@
-from App.Util.FuncionesActivacion import *
+from app.util.FuncionesActivacion import *
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -131,9 +131,8 @@ class LSTM:
         return dWf, dbf, dWi, dbi, dWc, dbc, dWo, dbo, dWy, dby, dh_prev, dx
 
     def fit(self, X: np.ndarray, y: np.ndarray, factor_aprendizaje = 0.001):
-        palabras, _ = X.shape
-        n_x, _ = self.tam_entrada
-        T = palabras // n_x
+        T = len(X)
+        print(f"Entradas Totales: {T}")
         
         perdidas = []
         
@@ -141,9 +140,9 @@ class LSTM:
             self.T = 0
             total_loss = 0
             
-            for t in range(0, T, n_x):
-                x_t = X[t:(t + n_x),:]
-                y_t = y[t,:]
+            for t in range(0, T):
+                x_t = X[t]
+                y_t = y[t]
                 
                 y_pred = self.celdaAdelante(x_t)
                 
@@ -178,19 +177,43 @@ class LSTM:
         plt.ylabel("Pérdida")
         plt.title("Pérdida durante el Entrenamiento")
         plt.show()
+    
+    def adaptarEntradaPrediccion():
+        return
             
     def prediccion(self, X: np.ndarray):
-        n_x, _ = self.tam_entrada
-        T = X.shape[0] // n_x
+        T = len(X)
         
         self.T = 0
         self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
         self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
         
+        n, m = self.tam_entrada
+        n_prediccion, m_prediccion = X.shape
+        n_faltantes = n - n_prediccion
+        m_faltantes = m - m_prediccion
         predicciones = []
         
+        if(m_faltantes > 0):
+            padding_m = np.zeros((n_prediccion, m_faltantes))
+            X_new = np.hstack((X, padding_m))
+        elif(m_faltantes < 0):
+            cols_a_eliminar = np.arange(m_faltantes, 0)
+            X_new = np.delete(X, cols_a_eliminar, axis=1)
+        else:
+            X_new = X
+            
+        if(n_faltantes > 0):
+            padding_n = np.zeros((n_faltantes, m))
+            X_new = np.vstack((X_new, padding_n))
+        elif(n_faltantes < 0):
+            fils_a_eliminar = np.arange(n_faltantes, 0)
+            X_new = np.delete(X_new, fils_a_eliminar, axis=0)
+        else:
+            X_new = X_new
+        
         for t in range(T):
-            x_t = X[t:(t + n_x),:]
+            x_t = X_new
             y_pred = self.celdaAdelante(x_t)
             predicciones.append(y_pred)
             self.T += 1
