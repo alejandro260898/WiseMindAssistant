@@ -6,11 +6,11 @@ from app.util.ProcesadorDatos import train_test_split
 from app.controller.LSTM import LSTM
 
 EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,\(\)0-9\"\']'
-NUM_EPOCAS = 5
-FACTORA_APRENDIZAJE = 0.001
+NUM_EPOCAS = 10
+FACTORA_APRENDIZAJE = 0.08
 PALABRAS_ENTRADA = 10
 PALABRAS_PREDICCION = 1
-CELDAS_MEMORIA = 10
+CELDAS_MEMORIA = 30
 
 def generar_secuencias(X: np.ndarray, n: int):
     secuenciasEntrada = {}
@@ -60,14 +60,12 @@ tokens = adaptarTexto("¿Qué es Dark Souls?")
 X = OneHotEncoder(tokens)
 
 preds = lstm.prediccion(X)
-print(preds.shape[0])
-print(preds.shape[1])
+print(preds)
 indices = np.argmax(preds, axis=0)
-print(indices)
 
-print(indice_a_palabra[1])
-print(indice_a_palabra[0])
-print(indice_a_palabra[5])
-print(indice_a_palabra[5])
-print(indice_a_palabra[5])
-print(indice_a_palabra[3])
+# print(indice_a_palabra[1])
+# print(indice_a_palabra[0])
+# print(indice_a_palabra[5])
+# print(indice_a_palabra[5])
+# print(indice_a_palabra[5])
+# print(indice_a_palabra[3])

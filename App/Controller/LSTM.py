@@ -178,21 +178,11 @@ class LSTM:
         plt.title("Pérdida durante el Entrenamiento")
         plt.show()
     
-    def adaptarEntradaPrediccion():
-        return
-            
-    def prediccion(self, X: np.ndarray):
-        T = len(X)
-        
-        self.T = 0
-        self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
-        self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
-        
+    def adaptarEntradaPrediccion(self, X: np.ndarray):
         n, m = self.tam_entrada
         n_prediccion, m_prediccion = X.shape
         n_faltantes = n - n_prediccion
         m_faltantes = m - m_prediccion
-        predicciones = []
         
         if(m_faltantes > 0):
             padding_m = np.zeros((n_prediccion, m_faltantes))
@@ -211,9 +201,20 @@ class LSTM:
             X_new = np.delete(X_new, fils_a_eliminar, axis=0)
         else:
             X_new = X_new
+            
+        return X_new
+            
+    def prediccion(self, X: np.ndarray):        
+        self.T = 0
+        self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
+        self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
+        predicciones = []
+        
+        X_new = { 0: self.adaptarEntradaPrediccion(X) }
+        T = len(X_new)
         
         for t in range(T):
-            x_t = X_new
+            x_t = X_new[t]
             y_pred = self.celdaAdelante(x_t)
             predicciones.append(y_pred)
             self.T += 1
