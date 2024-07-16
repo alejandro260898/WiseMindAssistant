@@ -12,4 +12,5 @@ def OneHotEncoder(tokens = [], vocabularioExistente = {}):
         for i, categoria in enumerate(tokens):
             indice = indicesTokens[categoria]
             oneHotEncoded[i, indice] = 1
-        return oneHotEncoded
+            vocabulario[categoria] = oneHotEncoded[i]
+        return oneHotEncoded, vocabulario

@@ -179,30 +179,37 @@ class LSTM:
         plt.show()
     
     def adaptarEntradaPrediccion(self, X: np.ndarray):
+        cuentaT = 0
+        entradas = {}
         n, m = self.tam_entrada
-        n_prediccion, m_prediccion = X.shape
-        n_faltantes = n - n_prediccion
-        m_faltantes = m - m_prediccion
+        filas_faltante = n
         
-        if(m_faltantes > 0):
-            padding_m = np.zeros((n_prediccion, m_faltantes))
-            X_new = np.hstack((X, padding_m))
-        elif(m_faltantes < 0):
-            cols_a_eliminar = np.arange(m_faltantes, 0)
-            X_new = np.delete(X, cols_a_eliminar, axis=1)
-        else:
-            X_new = X
+        while(filas_faltante > 0):
+            n_prediccion, _ = X.shape
+            n_faltantes = n - n_prediccion
             
-        if(n_faltantes > 0):
-            padding_n = np.zeros((n_faltantes, m))
-            X_new = np.vstack((X_new, padding_n))
-        elif(n_faltantes < 0):
-            fils_a_eliminar = np.arange(n_faltantes, 0)
-            X_new = np.delete(X_new, fils_a_eliminar, axis=0)
-        else:
-            X_new = X_new
+            if(n_faltantes == 0):
+                entradas[cuentaT] = X
+                filas_faltante = 0
+            else:              
+                if(n_faltantes > 0): # Rellenar
+                    padding_n = np.zeros((n_faltantes, m))
+                    X_new = np.vstack((X, padding_n))
+                    entradas[cuentaT] = X_new
+                    filas_faltante = 0
+                elif(n_faltantes < 0): # Reducir
+                    fils_a_eliminar = np.arange(n_faltantes, 0)
+                    X_new = np.delete(X, fils_a_eliminar, axis=0)
+                    entradas[cuentaT] = X_new
+                    
+                    X = X[((cuentaT+1) * n):-1]
+                    filas_faltante = X.shape[0]
+                else:
+                    entradas[cuentaT] = X
+                    filas_faltante = 0
+            cuentaT += 1
             
-        return X_new
+        return entradas
             
     def prediccion(self, X: np.ndarray):        
         self.T = 0
@@ -210,7 +217,7 @@ class LSTM:
         self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
         predicciones = []
         
-        X_new = { 0: self.adaptarEntradaPrediccion(X) }
+        X_new = self.adaptarEntradaPrediccion(X)
         T = len(X_new)
         
         for t in range(T):

@@ -10,7 +10,7 @@ NUM_EPOCAS = 10
 FACTORA_APRENDIZAJE = 0.08
 PALABRAS_ENTRADA = 10
 PALABRAS_PREDICCION = 1
-CELDAS_MEMORIA = 30
+CELDAS_MEMORIA = 50
 
 def generar_secuencias(X: np.ndarray, n: int):
     secuenciasEntrada = {}
@@ -24,7 +24,7 @@ def generar_secuencias(X: np.ndarray, n: int):
 def adaptarTexto(data: str):
     # -- Tokenizar Texto -- #
     # Se trata de eliminar todo aquello que no necesites para procesar el texto.
-    tokens = re.sub(EXP_REGULAR_TOKENS, ' ', data.strip())
+    tokens = re.sub(EXP_REGULAR_TOKENS, ' ', data.lower().strip())
     tokens = re.findall(r'\b\w+\b|[^\w\s]', tokens)
     
     # Se elimina todas las palabras en blanco
@@ -40,8 +40,11 @@ with open('data.txt', 'r', encoding='utf-8') as archivo:
 
 # Define el tamaño de la secuencia de entrada
 tokens = adaptarTexto(documento)
-indice_a_palabra = {i: token for i, token in enumerate(tokens)}
-X = OneHotEncoder(tokens)
+tokens.insert(0, '<UNK>')
+tokens.append('<END>')
+
+indicesPalabras = {i: token for i, token in enumerate(tokens)}
+X, vocabulario = OneHotEncoder(tokens)
 n, m = X.shape
 
 # Recordar que nuestra salida debe ser la palabra siguiente de cada palabra
@@ -56,16 +59,16 @@ lstm = LSTM(
 )
 lstm.fit(X, y, FACTORA_APRENDIZAJE)
 
-tokens = adaptarTexto("¿Qué es Dark Souls?")
-X = OneHotEncoder(tokens)
+tokens = adaptarTexto("¿Que es Dark Souls?")
+X = np.empty((0, m))
+for token in tokens:
+    if(token in vocabulario):
+        X = np.vstack((X, vocabulario[token]))
+    else:
+        X = np.vstack((X, vocabulario['<UNK>']))
 
 preds = lstm.prediccion(X)
-print(preds)
-indices = np.argmax(preds, axis=0)
-
-# print(indice_a_palabra[1])
-# print(indice_a_palabra[0])
-# print(indice_a_palabra[5])
-# print(indice_a_palabra[5])
-# print(indice_a_palabra[5])
-# print(indice_a_palabra[3])
+for pred in preds:
+    indice = np.argmax(pred)
+    print(indice)
+    print(indicesPalabras[indice])
