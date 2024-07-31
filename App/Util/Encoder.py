@@ -1,11 +1,11 @@
 import numpy as np
 
-def OneHotEncoder(tokens = [], vocabularioExistente = {}):
-    vocabulario = vocabularioExistente
+def OneHotEncoder(tokens = []):
+    vocabulario = {}
     
     if(len(tokens) == 0): return None, vocabulario
     else:
-        tokensUnicos = list(set(tokens)) # Obtener una lista sin palabras repetidas
+        tokensUnicos = sorted(list(set(tokens))) # Obtener una lista sin palabras repetidas
         indicesTokens = {categoria: i for i, categoria in enumerate(tokensUnicos)}
         
         oneHotEncoded = np.zeros((len(tokens), len(tokensUnicos)))

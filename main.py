@@ -6,7 +6,7 @@ from app.util.ProcesadorDatos import train_test_split
 from app.controller.LSTM import LSTM
 
 EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,\(\)0-9\"\']'
-NUM_EPOCAS = 10
+NUM_EPOCAS = 5
 FACTORA_APRENDIZAJE = 0.08
 PALABRAS_ENTRADA = 10
 PALABRAS_PREDICCION = 1
@@ -40,15 +40,16 @@ with open('data.txt', 'r', encoding='utf-8') as archivo:
 
 # Define el tamaño de la secuencia de entrada
 tokens = adaptarTexto(documento)
-tokens.insert(0, '<UNK>')
+tokens.append('<UNK>')
 tokens.append('<END>')
+tokensUnicos = sorted(list(set(tokens)))
 
-indicesPalabras = {i: token for i, token in enumerate(tokens)}
+indicesPalabras = {i: token for i, token in enumerate(tokensUnicos)}
 X, vocabulario = OneHotEncoder(tokens)
-n, m = X.shape
+_, m = X.shape
 
 # Recordar que nuestra salida debe ser la palabra siguiente de cada palabra
-X, y = generar_secuencias(X, PALABRAS_ENTRADA)
+X, y = generar_secuencias(X[:-2,:], PALABRAS_ENTRADA)
 # x_train, y_train, x_test, y_test = train_test_split(X, y)
 
 lstm = LSTM(
@@ -57,18 +58,22 @@ lstm = LSTM(
     (CELDAS_MEMORIA, m),
     NUM_EPOCAS
 )
+print(indicesPalabras[41])
 lstm.fit(X, y, FACTORA_APRENDIZAJE)
 
 tokens = adaptarTexto("¿Que es Dark Souls?")
 X = np.empty((0, m))
 for token in tokens:
+    print(token)
     if(token in vocabulario):
         X = np.vstack((X, vocabulario[token]))
     else:
+        print('aqui')
         X = np.vstack((X, vocabulario['<UNK>']))
 
 preds = lstm.prediccion(X)
 for pred in preds:
     indice = np.argmax(pred)
+    print(pred)
     print(indice)
     print(indicesPalabras[indice])
