@@ -67,7 +67,7 @@ import numpy as np
 
 
 from app.nlp.preprocesamiento.tokens import generarTokens
-from app.nlp.preprocesamiento.procesador_datos import generarSecuencias
+from app.nlp.preprocesamiento.procesador_datos import generarSecuencias, SecuenciaPrediccion
 from app.nlp.preprocesamiento.vocabulario import Vocabulario
 from app.nlp.preprocesamiento.encoder.oneHotEncoded import OneHotEncoded
 
@@ -81,4 +81,10 @@ X, y = generarSecuencias(tokens, 10, vocabulario)
 
 # print(tokens)
 # print(vocabulario.dameToken(40))
-# print(vocabulario.dameEncoder('dark'))
+# print(vocabulario.dameEncoder('<UNK>'))
+
+# tokens_prediccion = generarTokens("¿Qué es dark souls?", EXP_REGULAR_TOKENS, False)
+# print(tokens_prediccion)
+# print('---------------------------')
+# secuenciaPrediccion = SecuenciaPrediccion(tokens_prediccion, vocabulario)
+# x = secuenciaPrediccion.generarSecuencia(10, None)
