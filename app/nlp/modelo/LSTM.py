@@ -1,4 +1,6 @@
 from app.nlp.modelo.funciones_activacion.funciones_activacion import *
+from app.nlp.preprocesamiento.procesador_datos import SecuenciaPrediccion
+from app.nlp.preprocesamiento.vocabulario import Vocabulario
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -178,19 +180,21 @@ class LSTM:
         plt.title("Pérdida durante el Entrenamiento")
         plt.show()
             
-    def prediccion(self, X: np.ndarray):        
-        self.T = 0
+    def prediccion(self, X: np.ndarray, generador_secuencias = SecuenciaPrediccion(), vocabulario = Vocabulario()):
         self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
         self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
+        n_x, _ = self.tam_entrada
+        
         predicciones = []
+        prediccion = None
         
-        X_new = []
-        T = len(X_new)
-        
-        for t in range(T):
-            x_t = X_new[t]
+        while prediccion != vocabulario.dameTokenEND() and generador_secuencias.dameTiempo() < 10:
+            x_t = generador_secuencias.generarSecuencia(n_x, prediccion)
             y_pred = self.celdaAdelante(x_t)
-            predicciones.append(y_pred)
-            self.T += 1
+            print(y_pred)
+            indice = np.argmax(y_pred)
+            print(indice)
+            prediccion = vocabulario.dameToken(indice)
+            predicciones.append(prediccion)
             
-        return np.array(predicciones)
+        return predicciones

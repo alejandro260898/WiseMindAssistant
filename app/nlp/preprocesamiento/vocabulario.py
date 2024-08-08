@@ -7,8 +7,10 @@ class Vocabulario:
     TOKE_UNK = "<UNK>"
     lista_indice_token = {}
     lista_token_encoder = {}
+    tokens_originales = [] 
     
     def __init__(self, tokens:list = [], encoder = OneHotEncoded()):
+        self.tokens_originales = tokens.copy()
         tokens.append(self.TOKE_END)
         tokens.append(self.TOKE_PAD)
         tokens.append(self.TOKE_UNK)
@@ -42,4 +44,7 @@ class Vocabulario:
     
     def dameTokenUNK(self) -> str:
         return self.TOKE_UNK
+    
+    def dameTokens(self) -> list:
+        return self.tokens_originales
     
