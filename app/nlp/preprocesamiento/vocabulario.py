@@ -33,7 +33,11 @@ class Vocabulario:
     def dameEncoder(self, token = "") -> np.ndarray:
         token = token.lower().strip()
         
-        if(token in self.lista_token_encoder): return np.asanyarray(self.lista_token_encoder[token])
+        if(token in self.lista_token_encoder): 
+            if(token == self.TOKE_PAD):
+                return np.zeros_like(self.lista_token_encoder[token])
+            else:
+                return np.asanyarray(self.lista_token_encoder[token])
         else: return np.asanyarray(self.lista_token_encoder[self.TOKE_UNK])
         
     def dameTokenEND(self) -> str:

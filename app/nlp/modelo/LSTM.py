@@ -134,15 +134,17 @@ class LSTM:
         return dWf, dbf, dWi, dbi, dWc, dbc, dWo, dbo, dWy, dby, dh_prev, dx
 
     def fit(self, X, y, factor_aprendizaje = 0.001):
-        T = len(X)
-        print(f"Entradas Totales: {T}")
+        secuencias = len(X)
+        print(f"Secuencias por epoca: {secuencias}")
+        print(f"Total de epocas: {self.epocas}")
         
         perdidas = []
+        self.T = 0
+        
         for epoca in range(self.epocas): # Retroalimentación
-            self.T = 0
             total_loss = 0
             
-            for t in range(0, T):
+            for t in range(0, secuencias):
                 x_t = X[t]
                 y_t = y[t]
                 
@@ -170,7 +172,7 @@ class LSTM:
                 
                 self.T += 1
             
-            avg_loss = total_loss / T
+            avg_loss = total_loss / secuencias
             perdidas.append(avg_loss)
             print(f"Epoca {epoca + 1}/{self.epocas}, Pérdida: {avg_loss}")
             
@@ -187,14 +189,23 @@ class LSTM:
         
         predicciones = []
         prediccion = None
-        
+
+        self.T = 0
         while prediccion != vocabulario.dameTokenEND() and generador_secuencias.dameTiempo() < 10:
             x_t = generador_secuencias.generarSecuencia(n_x, prediccion)
-            y_pred = self.celdaAdelante(x_t)
-            print(y_pred)
+
+            y_pred = self.celdaAdelante(x_t)       
             indice = np.argmax(y_pred)
-            print(indice)
+            
             prediccion = vocabulario.dameToken(indice)
             predicciones.append(prediccion)
             
+            self.T += 1
+            
         return predicciones
+    
+    def guardar():
+        return
+    
+    def cargar():
+        return

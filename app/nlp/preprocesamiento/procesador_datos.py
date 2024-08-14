@@ -48,7 +48,6 @@ class SecuenciaPrediccion:
             secuencia_entrada = np.vstack(
                 (secuencia_entrada, self.vocabulario.dameEncoder(tokens_secuencia[i]))
             )
-            
         return secuencia_entrada
     
     def dameTiempo(self):

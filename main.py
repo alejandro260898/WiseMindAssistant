@@ -1,5 +1,3 @@
-import re
-import numpy as np
 from app.nlp.preprocesamiento.tokens import generarTokens
 from app.nlp.preprocesamiento.procesador_datos import generarSecuencias, SecuenciaPrediccion
 from app.nlp.preprocesamiento.vocabulario import Vocabulario
@@ -8,11 +6,11 @@ from app.nlp.modelo.LSTM import LSTM
 
 RUTA = 'data.txt'
 EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,\(\)0-9\"\']'
-NUM_EPOCAS = 50
-FACTORA_APRENDIZAJE = 0.001
+NUM_EPOCAS = 50 #50
+FACTORA_APRENDIZAJE = 0.001 #0.001
 PALABRAS_ENTRADA = 10
 PALABRAS_PREDICCION = 1
-CELDAS_MEMORIA = 100
+CELDAS_MEMORIA = 30 #100
 
 tokens = generarTokens(RUTA, EXP_REGULAR_TOKENS)
 oneHotEncoded = OneHotEncoded()
@@ -28,7 +26,7 @@ lstm = LSTM(
 )
 lstm.fit(X, y, FACTORA_APRENDIZAJE)
 
-entrada_usuario = "dark souls"
+entrada_usuario = "¿Que es dark souls?"
 tokens_usuario = generarTokens(entrada_usuario, EXP_REGULAR_TOKENS, False)
 generadorSecuencias = SecuenciaPrediccion(tokens_usuario, vocabulario)
 preds = lstm.prediccion(X, generadorSecuencias, vocabulario)
