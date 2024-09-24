@@ -1,33 +1,30 @@
-from app.nlp.preprocesamiento.tokens import generarTokens
-from app.nlp.preprocesamiento.procesador_datos import generarSecuencias, SecuenciaPrediccion
-from app.nlp.preprocesamiento.vocabulario import Vocabulario
-from app.nlp.preprocesamiento.encoder.oneHotEncoded import OneHotEncoded
-from app.nlp.modelo.LSTM import LSTM
+from app.chatbot.ChatBot import ChatBot
+from app.chatbot.Vocabulario import Vocabulario
 
-RUTA = 'data.txt'
-EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ¿?.,\(\)0-9\"\']'
-NUM_EPOCAS = 50 #50
-FACTORA_APRENDIZAJE = 0.001 #0.001
-PALABRAS_ENTRADA = 10
-PALABRAS_PREDICCION = 1
-CELDAS_MEMORIA = 30 #100
+NOM_DATASET = './app/chatbot/data/dataset.xlsx'
+COL_PREGUNTA = 'USUARIO'
+COL_RESPUESTA = 'ASISTENTE'
+EPOCAS = 450
 
-tokens = generarTokens(RUTA, EXP_REGULAR_TOKENS)
-oneHotEncoded = OneHotEncoded()
-vocabulario = Vocabulario(tokens, oneHotEncoded)
-X, y = generarSecuencias(vocabulario.dameTokens(), PALABRAS_ENTRADA, vocabulario)
-_, m = X[0].shape
+vocabulario = Vocabulario()
+vocabulario.leerData(NOM_DATASET, COL_PREGUNTA, COL_RESPUESTA)
+vocabulario.cargar()
 
-lstm = LSTM(
-    (PALABRAS_ENTRADA, m),
-    (PALABRAS_PREDICCION, m),
-    (CELDAS_MEMORIA, m),
-    NUM_EPOCAS
-)
-lstm.fit(X, y, FACTORA_APRENDIZAJE)
+preguntas = vocabulario.obtenerPreguntas()
+respuestas = vocabulario.obtenerRespuestas()
+preguntas_seq = vocabulario.crearSecuencias(preguntas)
+respuestas_seq = vocabulario.crearSecuencias(respuestas)
+tam_max_seq = vocabulario.crearTamMaxSecuencia(preguntas_seq + respuestas_seq)
+preguntas_seq = vocabulario.agregarPadding(preguntas_seq)
+respuestas_seq = vocabulario.agregarPadding(respuestas_seq)
 
-entrada_usuario = "¿Que es dark souls?"
-tokens_usuario = generarTokens(entrada_usuario, EXP_REGULAR_TOKENS, False)
-generadorSecuencias = SecuenciaPrediccion(tokens_usuario, vocabulario)
-preds = lstm.prediccion(X, generadorSecuencias, vocabulario)
-print(preds)
+y = vocabulario.obtenerRespuestasOneHotEncoder(respuestas_seq)
+
+palabras_indices = vocabulario.obtenerPalabraIndice()
+total_palabras = len(palabras_indices) + 1
+
+modelo = ChatBot(total_palabras, tam_max_seq, vocabulario.obtenerTokenizer())
+modelo.entrenar(preguntas_seq, y, EPOCAS)
+res = modelo.predeccir('te gusta la pizza')
+
+print(res)

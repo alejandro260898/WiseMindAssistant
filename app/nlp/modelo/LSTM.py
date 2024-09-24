@@ -30,36 +30,48 @@ class LSTM:
     # backpropagation. (a, c, y)
     #
     def __init__(self, tam_entrada=(1, 1), tam_salida=(1, 1), tam_oculto=(1, 1), epocas=100):
+        """
+        Constructor para inicializar los parámetros del modelo LSTM.
+        
+        Args:
+            tam_entrada (tuple): Dimensiones de la entrada (n_x, m).
+            tam_salida (tuple): Dimensiones de la salida (n_y, m).
+            tam_oculto (tuple): Dimensiones del estado oculto (n_a, m).
+            epocas (int): Número de épocas para el entrenamiento.
+        """
+        # Inicializar cache y contador de tiempo
         self.cache = []
-        self.T = self.TIEMPO_INICIAL # Contador de los pasos en el tiempo
+        self.T = self.TIEMPO_INICIAL  # Contador de pasos en el tiempo
         self.epocas = epocas
         
-        self.tam_entrada  = tam_entrada
-        self.tam_salida  = tam_salida
+        # Tamaños de entrada y salida
+        self.tam_entrada = tam_entrada
+        self.tam_salida = tam_salida
         
+        # Descomponer las dimensiones
         n_x, m = tam_entrada
-        n_a, _ = tam_oculto
         n_y, _ = tam_salida
+        n_a, _ = tam_oculto
 
-        # Puerta Entrada / Actualizar
-        self.Wi = self.inicializacionXavierGlorot((n_a, n_a + n_x))
-        self.bi = np.zeros((n_a, 1))
-        # Puerta Olvido
-        self.Wf = self.inicializacionXavierGlorot((n_a, n_a + n_x))
-        self.bf = np.zeros((n_a, 1))
-        # Puerta Candidato
-        self.Wc = self.inicializacionXavierGlorot((n_a, n_a + n_x))
-        self.bc = np.zeros((n_a, 1))
-        # Puerta Salida
-        self.Wo = self.inicializacionXavierGlorot((n_a, n_a + n_x))
-        self.bo = np.zeros((n_a, 1))
-        # Predicción
-        self.Wy = self.inicializacionXavierGlorot((n_y, n_a))
-        self.by = np.zeros((n_y, 1))
-        # Estado Oculto
-        self.h = { self.T: np.zeros((n_a, m)) }
-        # Estado Celda
-        self.c = { self.T: np.zeros((n_a, m)) }
+        # Inicialización de pesos y biases para cada puerta y capa de predicción
+        self.Wi = self.inicializacionXavierGlorot((n_a, n_a + n_x))  # Pesos para puerta de entrada
+        self.bi = np.zeros((n_a, 1))  # Bias para puerta de entrada
+        
+        self.Wf = self.inicializacionXavierGlorot((n_a, n_a + n_x))  # Pesos para puerta de olvido
+        self.bf = np.zeros((n_a, 1))  # Bias para puerta de olvido
+        
+        self.Wc = self.inicializacionXavierGlorot((n_a, n_a + n_x))  # Pesos para puerta candidato
+        self.bc = np.zeros((n_a, 1))  # Bias para puerta candidato
+        
+        self.Wo = self.inicializacionXavierGlorot((n_a, n_a + n_x))  # Pesos para puerta de salida
+        self.bo = np.zeros((n_a, 1))  # Bias para puerta de salida
+        
+        self.Wy = self.inicializacionXavierGlorot((n_y, n_a))  # Pesos para capa de predicción
+        self.by = np.zeros((n_y, 1))  # Bias para capa de predicción
+        
+        # Inicialización de estados ocultos y de celda
+        self.h = {self.T: np.zeros((n_a, m))}  # Estado oculto inicial
+        self.c = {self.T: np.zeros((n_a, m))}  # Estado de celda inicial
         
     # -------------------------------
     #         Inicialización
@@ -74,29 +86,29 @@ class LSTM:
         return np.random.normal(0, varianza, size=dimension)
 
     def ejecutarPuertaEntrada(self, x_t: np.ndarray):
-        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        concat = np.concatenate((self.h[self.T - 1], x_t), axis=0)
         return logistic_hidden(self.Wi @ concat + self.bi)
 
     def ejecutarPuertaOlvido(self, x_t: np.ndarray):
-        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        concat = np.concatenate((self.h[self.T - 1], x_t), axis=0)
         return logistic_hidden(self.Wf @ concat + self.bf)
 
     def ejecutarCandidato(self, x_t: np.ndarray):
-        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        concat = np.concatenate((self.h[self.T - 1], x_t), axis=0)
         return tanh(self.Wc @ concat + self.bc)
 
     def ejecutarPuertaSalida(self, x_t: np.ndarray):
-        concat = np.concatenate((x_t, self.h[self.T - 1]), axis=0)
+        concat = np.concatenate((self.h[self.T - 1], x_t), axis=0)
         return logistic_hidden(self.Wo @ concat + self.bo)
         
     def celdaAdelante(self, x_t: np.ndarray):
-        f_t = self.ejecutarPuertaOlvido(x_t)        # Valor de la puerta de olvido en el paso t
-        i_t = self.ejecutarPuertaEntrada(x_t)       # Valor de la puerta de entrada/actualizacion en el paso t
-        cc_t = self.ejecutarCandidato(x_t)          # Valor de la puerta candidata en el paso t
-        o_t = self.ejecutarPuertaSalida(x_t)        # Valor de la puerta de salida en el paso t
-        c_t = self.c[self.T - 1] * f_t + i_t * cc_t # Valor de celda en el paso t
-        h_t = c_t * tanh(o_t)                       # Valor de estado oculto en el paso t
-        y_pred = softmax(self.Wy @ h_t + self.by)   # Valor predicción
+        i_t =  self.ejecutarPuertaEntrada(x_t)       # Valor de la puerta de entrada/actualizacion en el paso t
+        f_t =  self.ejecutarPuertaOlvido(x_t)        # Valor de la puerta de olvido en el paso t
+        cc_t = self.ejecutarCandidato(x_t)           # Valor de la puerta candidata en el paso t
+        o_t =  self.ejecutarPuertaSalida(x_t)        # Valor de la puerta de salida en el paso t
+        c_t =  self.c[self.T - 1] * f_t + i_t * cc_t # Valor de celda en el paso t
+        h_t =  tanh(c_t) * o_t                       # Valor de estado oculto en el paso t
+        y_pred = softmax(self.Wy @ h_t + self.by)    # Valor predicción
         
         self.h[self.T] = h_t
         self.c[self.T] = c_t
@@ -107,10 +119,10 @@ class LSTM:
     def celdaAtras(self, dy: np.ndarray, dh_next: np.ndarray, dc_next: np.ndarray):
         h_next, c_next, h_prev, c_prev, f_t, i_t, cc_t, o_t, x_t = self.cache.pop()
         
-        do = dh_next * tanh(c_next) * o_t * (1 - o_t)
+        do =  dh_next * tanh(c_next) * o_t * (1 - o_t)
         dcc = (dc_next * i_t + o_t * (1 - tanh(cc_t)**2) * i_t * dh_next) * (1 - cc_t**2)
-        di = (dc_next * cc_t + o_t * (1 - tanh(cc_t)**2) * cc_t * dh_next) * i_t * (1 - i_t)
-        df = (dc_next * c_prev + o_t * (1 - tanh(cc_t)**2) * c_prev * dh_next) * f_t * (1 - f_t)
+        di =  (dc_next * cc_t + o_t * (1 - tanh(cc_t)**2) * cc_t * dh_next) * i_t * (1 - i_t)
+        df =  (dc_next * c_prev + o_t * (1 - tanh(cc_t)**2) * c_prev * dh_next) * f_t * (1 - f_t)
         
         dWo = np.dot(do, np.concatenate((h_prev, x_t)).T)
         dbo = np.sum(do, axis=1, keepdims=True)
@@ -182,7 +194,7 @@ class LSTM:
         plt.title("Pérdida durante el Entrenamiento")
         plt.show()
             
-    def prediccion(self, X: np.ndarray, generador_secuencias = SecuenciaPrediccion(), vocabulario = Vocabulario()):
+    def prediccion(self, X: np.ndarray, generador_secuencias = SecuenciaPrediccion(), vocabulario:Vocabulario = None):
         self.h[self.TIEMPO_INICIAL] = np.zeros_like(self.h[self.TIEMPO_INICIAL])
         self.c[self.TIEMPO_INICIAL] = np.zeros_like(self.c[self.TIEMPO_INICIAL])
         n_x, _ = self.tam_entrada
@@ -201,7 +213,9 @@ class LSTM:
             predicciones.append(prediccion)
             
             self.T += 1
-            
+        
+        # print(y_pred)
+        # print('\n')
         return predicciones
     
     def guardar():

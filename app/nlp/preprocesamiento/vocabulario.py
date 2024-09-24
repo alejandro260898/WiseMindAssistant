@@ -17,14 +17,18 @@ class Vocabulario:
         
         tokens_unicos = sorted(list(set(tokens)))
         # print(tokens_unicos)
+        # print('\n')
         
         # Se crea la lista de [indice] = token
         self.lista_indice_token = {i: token for i, token in enumerate(tokens_unicos)}
         # print(self.lista_indice_token)
+        # print('\n')
         
         # Se crea la lista de [token] = encoder
         self.lista_token_encoder = encoder.generarEncoded(tokens_unicos)
-        # print(self.lista_token_encoder)
+        # print(self.lista_token_encoder['<UNK>'])
+        # print(self.lista_indice_token[42])
+        # print(self.lista_token_encoder['<UNK>'])
     
     def dameToken(self, indice = None) -> str:
         if(indice in self.lista_indice_token): return self.lista_indice_token[indice]
@@ -35,10 +39,11 @@ class Vocabulario:
         
         if(token in self.lista_token_encoder): 
             if(token == self.TOKE_PAD):
+                # return np.asarray(self.lista_token_encoder[token])
                 return np.zeros_like(self.lista_token_encoder[token])
             else:
-                return np.asanyarray(self.lista_token_encoder[token])
-        else: return np.asanyarray(self.lista_token_encoder[self.TOKE_UNK])
+                return np.array(self.lista_token_encoder[token])
+        else: return np.array(self.lista_token_encoder[self.TOKE_UNK])
         
     def dameTokenEND(self) -> str:
         return self.TOKE_END

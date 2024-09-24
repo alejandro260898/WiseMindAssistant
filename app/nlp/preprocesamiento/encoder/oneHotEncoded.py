@@ -14,7 +14,7 @@ class OneHotEncoded:
             for i, token in enumerate(indices_tokens):
                 indice = indices_tokens[token]
                 one_hot_encoded[i, indice] = 1
-                self.lista_one_hot_encoded[token] = np.asanyarray(one_hot_encoded[i])
+                self.lista_one_hot_encoded[token] = np.array(one_hot_encoded[i]).reshape((1, -1))
                 
             self.forma = one_hot_encoded.shape
             return self.lista_one_hot_encoded
