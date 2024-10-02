@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class ChatBot:
-    TAM_MAX_EMBEDDING = 64
-    NUM_NEURONAS = 250
-    NOM_ARCHIVO = 'C:/Users/raufa/OneDrive/Escritorio/ImportantThings/clonaciones/ModularProject/App/chatbot/memoria/modelo.h5'
+    TAM_MAX_EMBEDDING = 256
+    NUM_NEURONAS = 350
+    NOM_ARCHIVO = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/modelo.h5'
 
     def __init__(self, total_palabras:int = 1, tam_max_secuencia:int = 1, tokenizer:Tokenizer = None):
         self.tokenizer = tokenizer
@@ -60,9 +60,9 @@ class ChatBot:
                 plt.legend()
                 plt.show()
                 
-    def predeccir(self, pregunta:str = ''):
+    def predeccir(self, pregunta:str = '') -> str:
         # Ejemplo de predicción
-        pregunta_seq = self.tokenizer.texts_to_sequences([pregunta])
+        pregunta_seq = self.tokenizer.texts_to_sequences([pregunta.lower()])
         pregunta_seq = pad_sequences(pregunta_seq, maxlen=self.tam_max_secuencia, padding='post')
         # Predecir la respuesta
         prediccion = self.model.predict(pregunta_seq)
@@ -70,6 +70,11 @@ class ChatBot:
         # print(prediccion)
         indices_predicciones = np.argmax(prediccion, axis=-1)
         # print(indices_predicciones)
+        
         # Unimos las palabras separadas por espacio, donde si el indice es 0 se descarta
-        respuesta = ' '.join([self.tokenizer.index_word.get(i, '') for i in indices_predicciones if i != 0])
-        return respuesta
+        palabras = []
+        for i in indices_predicciones:
+            if(i != 0):
+                palabra = self.tokenizer.index_word.get(i, '')
+                palabras.append(palabra)
+        return palabras

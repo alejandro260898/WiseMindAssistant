@@ -7,7 +7,7 @@ CORS(app)
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'
 COL_RESPUESTA = 'ASISTENTE'
-EPOCAS = 450
+EPOCAS = 400
 
 modelo = None
 
@@ -16,12 +16,17 @@ def proof():
     return jsonify({"message": "hola cdscsdcs"})  
 
 
+@app.route('/')
+def inicio():
+    return 'Esta funcionando...'
 
 @app.route('/pregunta', methods=['POST'])
 def darPregunta():
     pregunta = request.get_json()
     print(pregunta.get('message'))
-    return jsonify({ 'respuesta': modelo.predeccir(pregunta.get('message')) })
+    palabras = modelo.predeccir(pregunta.get('message'))
+    respuesta = vocabulario.filtrarRespuesta(palabras=palabras)
+    return jsonify({ 'respuesta': respuesta })
 
 if __name__ == '__main__':
     vocabulario = Vocabulario()
@@ -33,6 +38,7 @@ if __name__ == '__main__':
     preguntas_seq = vocabulario.crearSecuencias(preguntas)
     respuestas_seq = vocabulario.crearSecuencias(respuestas)
     tam_max_seq = vocabulario.crearTamMaxSecuencia(preguntas_seq + respuestas_seq)
+    print(tam_max_seq)
     preguntas_seq = vocabulario.agregarPadding(preguntas_seq)
     respuestas_seq = vocabulario.agregarPadding(respuestas_seq)
 
