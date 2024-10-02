@@ -1,15 +1,21 @@
 from flask import Flask, jsonify, request
-from app.chatbot.Vocabulario import Vocabulario
-from app.chatbot.ChatBot import ChatBot
-
+from App.chatbot.Vocabulario import Vocabulario
+from App.chatbot.ChatBot import ChatBot
+from flask_cors import CORS
 app = Flask(__name__)
-
+CORS(app)
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'
 COL_RESPUESTA = 'ASISTENTE'
 EPOCAS = 450
 
 modelo = None
+
+@app.route('/proof')
+def proof():
+    return jsonify({"message": "hola cdscsdcs"})  
+
+
 
 @app.route('/pregunta', methods=['POST'])
 def darPregunta():

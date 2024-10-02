@@ -1,8 +1,8 @@
-from app.nlp.preprocesamiento.tokens import generarTokens
-from app.nlp.preprocesamiento.procesador_datos import generarSecuencias, SecuenciaPrediccion
-from app.nlp.preprocesamiento.vocabulario import Vocabulario
-from app.nlp.preprocesamiento.encoder.oneHotEncoded import OneHotEncoded
-from app.nlp.modelo.LSTM import LSTM
+from App.nlp.preprocesamiento.tokens import generarTokens
+from App.nlp.preprocesamiento.procesador_datos import generarSecuencias, SecuenciaPrediccion
+from App.nlp.preprocesamiento.vocabulario import Vocabulario
+from App.nlp.preprocesamiento.encoder.oneHotEncoded import OneHotEncoded
+from App.nlp.modelo.LSTM import LSTM
 
 RUTA = 'data.txt'
 EXP_REGULAR_TOKENS = r'[^a-zA-Záéíóúñ0-9]'

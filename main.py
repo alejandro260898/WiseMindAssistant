@@ -1,5 +1,6 @@
-from app.chatbot.ChatBot import ChatBot
-from app.chatbot.Vocabulario import Vocabulario
+
+from App.chatbot.ChatBot import ChatBot
+from App.chatbot.Vocabulario import Vocabulario
 
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'

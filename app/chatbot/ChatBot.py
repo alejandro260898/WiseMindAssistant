@@ -1,5 +1,6 @@
 from keras.api.models import Sequential, load_model
 from keras.api.layers import LSTM, Dense, Embedding
+
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from pathlib import Path
@@ -9,7 +10,7 @@ import numpy as np
 class ChatBot:
     TAM_MAX_EMBEDDING = 64
     NUM_NEURONAS = 250
-    NOM_ARCHIVO = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/modelo.h5'
+    NOM_ARCHIVO = 'C:/Users/raufa/OneDrive/Escritorio/ImportantThings/clonaciones/ModularProject/App/chatbot/memoria/modelo.h5'
 
     def __init__(self, total_palabras:int = 1, tam_max_secuencia:int = 1, tokenizer:Tokenizer = None):
         self.tokenizer = tokenizer

@@ -10,7 +10,7 @@ class Vocabulario:
     TOKEN_OOV = '<UNK>'
     MODO_LECTURA = 'rb'
     MODO_ESCRITURA = 'wb'
-    NOM_ARCHIVO_TOKENIZER = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/vocabulario.pkl'
+    NOM_ARCHIVO_TOKENIZER = 'C:/Users/raufa/OneDrive/Escritorio/ImportantThings/clonaciones/ModularProject/App/chatbot/memoria/vocabulario.pkl'
     
     def __init__(self) -> None:
         pass
