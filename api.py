@@ -7,7 +7,7 @@ app = Flask(__name__)
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'
 COL_RESPUESTA = 'ASISTENTE'
-EPOCAS = 200
+EPOCAS = 400
 
 modelo = None
 
@@ -19,7 +19,9 @@ def inicio():
 def darPregunta():
     pregunta = request.get_json()
     print(pregunta.get('message'))
-    return jsonify({ 'respuesta': modelo.predeccir(pregunta.get('message')) })
+    palabras = modelo.predeccir(pregunta.get('message'))
+    respuesta = vocabulario.filtrarRespuesta(palabras=palabras)
+    return jsonify({ 'respuesta': respuesta })
 
 if __name__ == '__main__':
     vocabulario = Vocabulario()

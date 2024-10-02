@@ -25,6 +25,6 @@ total_palabras = len(palabras_indices) + 1
 
 modelo = ChatBot(total_palabras, tam_max_seq, vocabulario.obtenerTokenizer())
 modelo.entrenar(preguntas_seq, y, EPOCAS)
-res = modelo.predeccir('que es bob esponja')
-
-print(res.capitalize())
+palabras = modelo.predeccir('¿como te llamas?')
+respuesta = vocabulario.filtrarRespuesta(palabras=palabras)
+print(respuesta)

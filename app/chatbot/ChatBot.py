@@ -69,11 +69,11 @@ class ChatBot:
         # print(prediccion)
         indices_predicciones = np.argmax(prediccion, axis=-1)
         # print(indices_predicciones)
+        
         # Unimos las palabras separadas por espacio, donde si el indice es 0 se descarta
         palabras = []
         for i in indices_predicciones:
-            if(i == 1): return 'Lo siento por el momento no conozco la respuesta a tu pregunta.'
-            elif(i != 0):
-                palabras.append(self.tokenizer.index_word.get(i, ''))
-        respuesta = ' '.join(palabras)
-        return respuesta
+            if(i != 0):
+                palabra = self.tokenizer.index_word.get(i, '')
+                palabras.append(palabra)
+        return palabras

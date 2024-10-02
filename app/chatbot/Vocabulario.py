@@ -74,3 +74,22 @@ class Vocabulario:
     
     def agregarPadding(self, secuencias = []):
         return pad_sequences(secuencias, maxlen=self.tam_max_seq, padding='post')
+
+    def filtrarRespuesta(self, palabras:list = []):
+        if(len(palabras) == 0): return "Lo siento por el momento no tengo una respuesta para esa pregunta."
+        else:
+            palabraAnt = None
+            respuestaCoherente = False
+            for palabra in palabras:
+                if(palabra == palabraAnt):          
+                    respuestaCoherente = False
+                    break
+                else:
+                    respuestaCoherente = True
+                    palabraAnt = palabra
+                
+            if(respuestaCoherente): 
+                respuesta = " ".join(palabras)
+            else:
+                respuesta = "Lo siento por el momento no tengo una respuesta para esa pregunta."
+            return respuesta
