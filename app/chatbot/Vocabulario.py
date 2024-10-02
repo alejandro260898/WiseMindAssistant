@@ -37,8 +37,14 @@ class Vocabulario:
         if(len(nom_archivo) == 0): return False
         else:
             data = pd.read_excel(nom_archivo)
-            self.preguntas = data[nomColPregunta]
-            self.respuestas = data[nomColRespuesta]
+            
+            self.preguntas = []
+            for pregunta in data[nomColPregunta]:
+                self.preguntas.append(pregunta.lower())
+            self.respuestas = []
+            for respuesta in data[nomColRespuesta]:
+                self.respuestas.append(respuesta.lower())
+            
             self.vocabulario = self.preguntas + self.respuestas
             return True
         
@@ -50,7 +56,7 @@ class Vocabulario:
                 self.tokenizer = pickle.load(file)
             return True
         else:
-            self.tokenizer = Tokenizer(filters='', oov_token=self.TOKEN_OOV)
+            self.tokenizer = Tokenizer(filters='"#$%&()*+-/:;<=>@[\\]^`{|}~', oov_token=self.TOKEN_OOV)
             self.entrenarVocabulario(self.vocabulario)
             return False
         
