@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class ChatBot:
-    TAM_MAX_EMBEDDING = 256
-    NUM_NEURONAS = 350
-    NOM_ARCHIVO = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/modelo.h5'
+    TAM_MAX_EMBEDDING = 800
+    NUM_NEURONAS = 300
+    NOM_ARCHIVO = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/modelo_v2.keras'
 
     def __init__(self, total_palabras:int = 1, tam_max_secuencia:int = 1, tokenizer:Tokenizer = None):
         self.tokenizer = tokenizer
@@ -76,4 +76,4 @@ class ChatBot:
             if(i != 0):
                 palabra = self.tokenizer.index_word.get(i, '')
                 palabras.append(palabra)
-        return palabras
+        return palabras        
