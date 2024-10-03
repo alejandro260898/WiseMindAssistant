@@ -1,0 +1,10 @@
+Flask==2.3.2
+flask-cors==4.0.0
+nltk==3.8.1
+keras==3.5.0
+matplotlib==3.8.0  # Última versión disponible según tu salida
+numpy==1.25.2
+pandas==2.1.1
+tensorboard==2.17.1
+keras-preprocessing
+tensorflow

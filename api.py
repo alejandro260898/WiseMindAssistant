@@ -22,6 +22,11 @@ EPOCAS = 800
 
 modelo = None
 
+@app.route('/proof')
+def proof():
+    return jsonify({"message": "hola cdscsdcs"})  
+
+
 @app.route('/')
 def inicio():
     return 'Esta funcionando...'

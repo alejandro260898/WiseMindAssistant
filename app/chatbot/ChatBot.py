@@ -1,5 +1,6 @@
 from keras.api.models import Sequential, load_model
 from keras.api.layers import LSTM, Dense, Embedding
+
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from pathlib import Path
