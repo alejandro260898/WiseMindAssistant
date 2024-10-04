@@ -18,7 +18,7 @@ class Usuario(db.Model):
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'
 COL_RESPUESTA = 'ASISTENTE'
-EPOCAS = 800
+EPOCAS = 295
 
 modelo = None
 

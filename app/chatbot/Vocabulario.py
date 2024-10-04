@@ -4,13 +4,14 @@ from pathlib import Path
 from keras_preprocessing.text import Tokenizer
 from keras_preprocessing.sequence import pad_sequences
 from keras.api.utils import to_categorical
+from nltk.metrics import edit_distance
 
 class Vocabulario:
     TAM_MAX_SECUENCIA = 0
     TOKEN_OOV = '<UNK>'
     MODO_LECTURA = 'rb'
     MODO_ESCRITURA = 'wb'
-    NOM_ARCHIVO_TOKENIZER = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/vocabulario_v2.pkl'
+    NOM_ARCHIVO_TOKENIZER = 'C:/Users/franc/Documents/GitHub/Proyecto_Modular/WiseMindAssistant/app/chatbot/memoria/vocabulario.pkl'
     
     def __init__(self) -> None:
         pass
@@ -56,7 +57,7 @@ class Vocabulario:
                 self.tokenizer = pickle.load(file)
             return True
         else:
-            self.tokenizer = Tokenizer(filters='"#$%&()*+-/:;<=>@[\\]^`{|}~', oov_token=self.TOKEN_OOV)
+            self.tokenizer = Tokenizer(filters='"#$%&()*+-:;<=>@[\\]^`{|}~', oov_token=self.TOKEN_OOV)
             self.entrenarVocabulario(self.vocabulario)
             return False
         
@@ -78,10 +79,14 @@ class Vocabulario:
     def filtrarRespuesta(self, palabras:list = []):
         if(len(palabras) == 0): return "Lo siento por el momento no tengo una respuesta para esa pregunta."
         else:
+            cuentaPalabra = 0
             palabraAnt = None
             respuestaCoherente = False
             for palabra in palabras:
-                if(palabra == palabraAnt):          
+                if(palabra == palabraAnt):
+                    cuentaPalabra += 1
+                    
+                if(cuentaPalabra == 5):          
                     respuestaCoherente = False
                     break
                 else:
@@ -90,6 +95,10 @@ class Vocabulario:
                 
             if(respuestaCoherente): 
                 respuesta = " ".join(palabras)
+                distancias = [edit_distance(respuesta, res) for res in self.respuestas]
+                # Encuentra la respuesta con la distancia mínima
+                indice_mejor_coincidencia = distancias.index(min(distancias))
+                respuesta = self.respuestas[indice_mejor_coincidencia]
             else:
                 respuesta = "Lo siento por el momento no tengo una respuesta para esa pregunta."
             return respuesta

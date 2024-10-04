@@ -1,11 +1,10 @@
-
-from App.chatbot.ChatBot import ChatBot
-from App.chatbot.Vocabulario import Vocabulario
+from app.chatbot.ChatBot import ChatBot
+from app.chatbot.Vocabulario import Vocabulario
 
 NOM_DATASET = './app/chatbot/data/dataset.xlsx'
 COL_PREGUNTA = 'USUARIO'
 COL_RESPUESTA = 'ASISTENTE'
-EPOCAS = 500
+EPOCAS = 295
 
 vocabulario = Vocabulario()
 vocabulario.leerData(NOM_DATASET, COL_PREGUNTA, COL_RESPUESTA)
@@ -26,6 +25,7 @@ total_palabras = len(palabras_indices) + 1
 
 modelo = ChatBot(total_palabras, tam_max_seq, vocabulario.obtenerTokenizer())
 modelo.entrenar(preguntas_seq, y, EPOCAS)
-palabras = modelo.predeccir('¿Qué puedo hacer para prevenir el agotamiento emocional?')
+palabras = modelo.predeccir('te gusta la pizza')
 respuesta = vocabulario.filtrarRespuesta(palabras=palabras)
-print(respuesta)
+print("\n")
+print(f"Respuesta: {respuesta}")
