@@ -85,6 +85,8 @@ class Vocabulario:
             for palabra in palabras:
                 if(palabra == palabraAnt):
                     cuentaPalabra += 1
+                else:
+                    cuentaPalabra = 0
                     
                 if(cuentaPalabra == 5):          
                     respuestaCoherente = False
