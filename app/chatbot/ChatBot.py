@@ -66,7 +66,7 @@ class ChatBot:
         pregunta_seq = pad_sequences(pregunta_seq, maxlen=self.tam_max_secuencia, padding='post')
         # Predecir la respuesta
         prediccion = self.model.predict(pregunta_seq)
-        prediccion = prediccion[0] 
+        prediccion = prediccion[0]
         # print(prediccion)
         indices_predicciones = np.argmax(prediccion, axis=-1)
         # print(indices_predicciones)
@@ -77,4 +77,4 @@ class ChatBot:
             if(i != 0):
                 palabra = self.tokenizer.index_word.get(i, '')
                 palabras.append(palabra)
-        return palabras        
+        return palabras

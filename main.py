@@ -25,7 +25,7 @@ total_palabras = len(palabras_indices) + 1
 
 modelo = ChatBot(total_palabras, tam_max_seq, vocabulario.obtenerTokenizer())
 modelo.entrenar(preguntas_seq, y, EPOCAS)
-palabras = modelo.predeccir('Que puedo hacer si siento ansiedad antes de dormir')
+palabras = modelo.predeccir('¿Que tecnicas puedo usar para calmar la ansiedad?')
 print(palabras)
 respuesta = vocabulario.filtrarRespuesta(palabras=palabras)
 print("\n")
