@@ -13,10 +13,8 @@ export default function LoginScreen({navigation}){
   const [description, setDescription] = useState('');
   const image = require('./images/ps.png')
   
-
-
-
 const verification = async()=>{
+  console.log(username, password)
   const getDates = await databaseConnection(username,password)
   //const getDates=true
     if(getDates){
@@ -29,27 +27,15 @@ const verification = async()=>{
   
     }
     else{
-     
-
-      //console.log("no se puede:(")
+      console.log("usuario no encontradi")
     }
 }
-
-
-
-
-
-
   return (
     <SafeAreaView style={styles.container}>
       <ImageBackground source={image} style={styles.backgroundImage}>
-
-        {/* Encabezado */}
         <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>PsicologistApp</Text>
+          <Text style={styles.headerTitle}>WiseMindAssistend</Text>
         </View>
-
-        {/* Cuerpo */}
         <View style={styles.loginContainer}>
           <TextInput
             style={styles.input}
@@ -65,8 +51,6 @@ const verification = async()=>{
             value={password}
             onChangeText={(text) => setPassword(text)}
           />
-
-          {/* Botones */}
           <TouchableOpacity style={styles.button} onPress={verification}>
             <Text style={styles.buttonText}>Iniciar Sesión</Text>
           </TouchableOpacity>
@@ -81,8 +65,6 @@ const verification = async()=>{
   );
 
 };
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

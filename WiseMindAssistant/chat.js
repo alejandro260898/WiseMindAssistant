@@ -16,24 +16,14 @@ const ChatApp = () => {
 
   const sendMensagges=async(update)=>{
     try{
-
      await addConvesationDatabase(update)
-
-
     }catch(e){
-
-
-      //console.log(e)
+      console.log(e.message)
     }
-  
-
-
   }
-
   const handleMessageSend = () => {
     if (inputText.trim() !== '') {
       let user=getGlobalData("usuario")
-      //console.log("El usuario es",user)
       const newMessage = { user: 'user', message: inputText, timestamp: new Date().toLocaleTimeString() };
       setIsLoading(true);
       fetchPsychologist(inputText);
@@ -55,11 +45,9 @@ const ChatApp = () => {
 
     }
   };
-
-
   const fetchPsychologist = async (mensaje) => {
     try {
-      const response = await fetch('http://192.168.100.20:5000/pregunta', {
+      const response = await fetch('https://quiet-hounds-sort.loca.lt/pregunta', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,7 +82,6 @@ const ChatApp = () => {
       return 0
     }
   };
-
   const sendResponse = (mensaje) => {
     
     const botResponse = { user: 'bot', message: mensaje || "Lo siento, no entendí eso.", timestamp: new Date().toLocaleTimeString() };
@@ -114,19 +101,21 @@ const ChatApp = () => {
   const scrollToBottom = () => {
     scrollViewRef.current.scrollToEnd({ animated: true });
   };
+
+  
   useEffect(() => {
     const fetchMessages = async () => {
       try {
        
        let dates = await getMessages();
        // let dates = [{"user":"user","message":"hola","timestamp":"11:58:35 AM"},{"user":"user","message":"hola","timestamp":"11:58:39 AM"},{"user":"user","message":"hh","timestamp":"11:58:42 AM"},{"user":"bot","message":"entonces  onda,  ¿qué  tal  va","timestamp":"11:58:42 AM"},{"user":"user","message":"hola","timestamp":"11:58:48 AM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"11:58:48 AM"},{"user":"user","message":"hola","timestamp":"11:58:51 AM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"11:58:51 AM"},{"user":"user","message":"hola","timestamp":"12:29:04 PM"},{"user":"user","message":"hola","timestamp":"12:29:08 PM"},{"user":"user","message":"hola","timestamp":"12:29:14 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:15 PM"},{"user":"user","message":"hola","timestamp":"12:29:18 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:18 PM"},{"user":"user","message":"hola","timestamp":"12:29:20 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:21 PM"},{"user":"user","message":"hola","timestamp":"12:29:23 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:23 PM"},{"user":"user","message":"hola","timestamp":"12:29:25 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:25 PM"}] 
-  
+       let usuario=getGlobalData("usuario");
         if (dates.length > 0) {
           setChatMessages(dates);
           //console.log(dates)
         } else {
           console.log("no tiene nada");
-          let welcome=[{"user":"bot","message":"Hola , bienvenido ","timestamp": new Date().toLocaleTimeString()}]
+          let welcome=[{"user":"bot","message":`Hola , bienvenido ${usuario}`,"timestamp": new Date().toLocaleTimeString()}]
           setChatMessages(welcome)
         }
       } catch (error) {
@@ -218,11 +207,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingBottom: 10,
+    paddingBottom: 20,
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
+    borderTopWidth: 3,
     borderTopColor: '#E5E5E5',
-    borderRadius: 20,
+    borderRadius: 30,
     overflow: 'hidden', // To make the input and button rounded
   },
   textInput: {

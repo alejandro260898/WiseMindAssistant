@@ -15,34 +15,80 @@ const TabNavigation = () => {
   return (
     <Tab.Navigator
       initialRouteName="Principal"
+      screenOptions={{
+        tabBarLabelStyle: { fontSize: 12, color: '#333' }, // Styling the label
+        tabBarStyle: { paddingBottom: 5, height: 60 },     // Extra padding for better alignment
+      }}
     >
-      <Tab.Screen name="Principal" component={Principal}   options={{
+      <Tab.Screen 
+        name="Principal" 
+        component={Principal} 
+        options={{
           tabBarIcon: () => (
-            <Image 
-              source={require('./images/principal.png')} 
-              style={{ width: 20, height: 20 }} 
-            />
+            <View style={{
+              width: 30, 
+              height: 30, 
+              borderRadius: 15, 
+              overflow: 'hidden', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2'  // Background color for round effect
+            }}>
+              <Image 
+                source={require('./images/principal.png')} 
+                style={{ width: 20, height: 20 }}
+              />
+            </View>
           ),
-        }}/>
-      <Tab.Screen name="chatApp" component={ChatApp} options={{
+          tabBarLabel: 'Principal', // Customize the label text
+        }}
+      />
+      <Tab.Screen 
+        name="chatApp" 
+        component={ChatApp} 
+        options={{
           tabBarIcon: () => (
-            <Image 
-              source={require('./images/chat.png')} 
-              style={{ width: 20, height: 20 }} 
-            />
+            <View style={{
+              width: 30, 
+              height: 30, 
+              borderRadius: 15, 
+              overflow: 'hidden', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2'
+            }}>
+              <Image 
+                source={require('./images/chat.png')} 
+                style={{ width: 20, height: 20 }}
+              />
+            </View>
           ),
-        }}/>
-      <Tab.Screen name="Ajustes" component={Salir} options={{
+          tabBarLabel: 'Chat', 
+        }}
+      />
+      <Tab.Screen 
+        name="Ajustes" 
+        component={Salir} 
+        options={{
           tabBarIcon: () => (
-            <Image 
-              source={require('./images/ajustes.png')} 
-              style={{ width: 20, height: 20 }} 
-            />
+            <View style={{
+              width: 30, 
+              height: 30, 
+              borderRadius: 15, 
+              overflow: 'hidden', 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              backgroundColor: '#f2f2f2'
+            }}>
+              <Image 
+                source={require('./images/ajustes.png')} 
+                style={{ width: 20, height: 20 }}
+              />
+            </View>
           ),
-        }}/>
-
-   
-     
+          tabBarLabel: 'Settings', 
+        }}
+      />
     </Tab.Navigator>
   );
 };

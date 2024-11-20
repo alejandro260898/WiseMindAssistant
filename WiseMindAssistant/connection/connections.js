@@ -8,8 +8,8 @@ export const databaseConnection=async(username,password)=>{
   
     try{
       const {data,error}=await supabase.from("users").select("*").eq("username",username).eq("password",password)
-      //console.log(data)
-      if(data.length>0){
+ 
+      if(data){
         //console.log(data)
         const  date=data[0].username
         console.log("el usuario que agrego es",date)
@@ -29,7 +29,7 @@ export const databaseConnection=async(username,password)=>{
   
     }catch(e){
   
-      //console.log("hay un error",e)
+      console.log("hay un error",e)
   
     }
   
@@ -77,12 +77,9 @@ export const databaseConnection=async(username,password)=>{
     try{
      
       const usuario=getGlobalData("usuario")
-
       const conexion= await supabase.from("users").select("id").eq("username",usuario)
       console.log(" la conexion es=",conexion.data[0].id)
       id=conexion.data[0].id
-      
-
       if(messages!=""){
         const { data, error } = await supabase
         .from('users')
@@ -135,19 +132,12 @@ export const databaseConnection=async(username,password)=>{
       if (error) {
          console.log("hubo un error :(", error);
         return 0;
-      } else if (data.length > 0 ) {
-       
+      } else if (data[0].messages!=null ) {
 
-  
         console.log("si hay datos, los datos son ", data[0].messages);
         let message =data[0].messages
         const parsedMessages = JSON.parse(message);  // Now it's an array of messages
-
         console.log("Fetched messages:", parsedMessages);
-  
-        // Set the messages as the state
-    
-
         return parsedMessages;
         
       } else {
