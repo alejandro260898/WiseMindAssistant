@@ -47,7 +47,7 @@ const ChatApp = () => {
   };
   const fetchPsychologist = async (mensaje) => {
     try {
-      const response = await fetch('https://quiet-hounds-sort.loca.lt/pregunta', {
+      const response = await fetch('https://bold-haze-51091.pktriot.net/pregunta', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
