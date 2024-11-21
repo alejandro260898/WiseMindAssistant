@@ -8,6 +8,7 @@ import Register from './Register';
 import Principal from './principal';
 import LoginScreen from './LoginScreen';
 import Salir from './salir';
+import editar from './editarScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,6 +42,7 @@ const TabNavigation = () => {
             </View>
           ),
           tabBarLabel: 'Principal', // Customize the label text
+          headerShown: false
         }}
       />
       <Tab.Screen 
@@ -64,6 +66,7 @@ const TabNavigation = () => {
             </View>
           ),
           tabBarLabel: 'Chat', 
+          headerShown: false,
         }}
       />
       <Tab.Screen 
@@ -86,7 +89,8 @@ const TabNavigation = () => {
               />
             </View>
           ),
-          tabBarLabel: 'Settings', 
+          tabBarLabel: 'Ajustes', 
+          headerShown: false
         }}
       />
     </Tab.Navigator>
@@ -103,6 +107,7 @@ export default function App() {
         <Stack.Screen name="tab" component={TabNavigation}options={{ headerShown: false }} />
         <Stack.Screen name="Register" component={Register} options={{ headerShown: false }}/>
         <Stack.Screen name="chatApp" component={ChatApp}   options={{ headerShown: false }}/>
+        <Stack.Screen name="editar" component={editar}   options={{ headerShown: false }}/>
 
       
       </Stack.Navigator>

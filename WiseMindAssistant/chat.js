@@ -1,50 +1,37 @@
-import React, { useState, useRef,useEffect } from 'react';
-import { View, TextInput, Button, Text, ScrollView, StyleSheet } from 'react-native';
-import { addConvesationDatabase,getMessages } from './connection/connections';
-import { supabase } from './connection/supabase';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TextInput, Button, Text, ScrollView, StyleSheet,TouchableOpacity,Image,ImageBackground  } from 'react-native';
+import { addConvesationDatabase, getMessages } from './connection/connections';
 import { getGlobalData } from './userGlobal';
-
-//import { addConvesationDatabase } from './connection/connections';
 
 const ChatApp = () => {
   const [inputText, setInputText] = useState('');
   const [chatMessages, setChatMessages] = useState([]);
-  const [messageApi, setMessageApi] = useState('');
-  const scrollViewRef = useRef();
   const [isLoading, setIsLoading] = useState(false);
+  const scrollViewRef = useRef();
 
-
-  const sendMensagges=async(update)=>{
-    try{
-     await addConvesationDatabase(update)
-    }catch(e){
-      console.log(e.message)
+  const sendMensagges = async (update) => {
+    try {
+      await addConvesationDatabase(update);
+    } catch (e) {
+      console.log(e.message);
     }
-  }
+  };
+
   const handleMessageSend = () => {
     if (inputText.trim() !== '') {
-      let user=getGlobalData("usuario")
       const newMessage = { user: 'user', message: inputText, timestamp: new Date().toLocaleTimeString() };
       setIsLoading(true);
       fetchPsychologist(inputText);
-      setChatMessages(chatMessages=>{
-
-        const update=[...chatMessages, newMessage]
-
-      sendMensagges(update)
-      return update
-    
-    });
-      console.log("lo que tiene el mesnaje antes de guardarse es=",chatMessages)
+      setChatMessages((chatMessages) => {
+        const update = [...chatMessages, newMessage];
+        sendMensagges(update);
+        return update;
+      });
       setInputText('');
       scrollToBottom();
-      
-      
-     // sendMensagges()
-      
-
     }
   };
+
   const fetchPsychologist = async (mensaje) => {
     try {
       const response = await fetch('https://bold-haze-51091.pktriot.net/pregunta', {
@@ -60,126 +47,125 @@ const ChatApp = () => {
       }
 
       const data = await response.json();
-      let subStrings=data.respuesta.split(" ")
-      let longiud=subStrings.length
-      for(let i=0; i<longiud; i++){
-        if(subStrings[i]==="nom_usuario,"){
-          ////console.log("el string tine",subStrings[i])
-          let user=getGlobalData("usuario")
-          subStrings[i]=user
-        }
-       
-      }
-      let separateSubstrings=subStrings.join("  ")
-      console.log("el mensaje que me llega es",separateSubstrings)
-     
-      //setMessageApi(separateSubstrings);
+      let separateSubstrings = data.respuesta.replace(/nom_usuario,/, getGlobalData("usuario"));
       sendResponse(separateSubstrings);
       setIsLoading(false);
-      return separateSubstrings
     } catch (error) {
       console.error('Error con el fetching:', error);
-      return 0
     }
   };
-  const sendResponse = (mensaje) => {
-    
-    const botResponse = { user: 'bot', message: mensaje || "Lo siento, no entendí eso.", timestamp: new Date().toLocaleTimeString() };
- 
-    setChatMessages(chatMessages=>{
 
-      const update=[...chatMessages, botResponse]
-    //console.log("new messages", update)
-      sendMensagges(update)
-    return update
-  
-  });
+  const sendResponse = (mensaje) => {
+    const botResponse = { user: 'bot', message: mensaje || "Lo siento, no entendí eso.", timestamp: new Date().toLocaleTimeString() };
+    setChatMessages((chatMessages) => {
+      const update = [...chatMessages, botResponse];
+      sendMensagges(update);
+      return update;
+    });
     scrollToBottom();
-   
   };
 
   const scrollToBottom = () => {
     scrollViewRef.current.scrollToEnd({ animated: true });
   };
 
-  
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-       
-       let dates = await getMessages();
-       // let dates = [{"user":"user","message":"hola","timestamp":"11:58:35 AM"},{"user":"user","message":"hola","timestamp":"11:58:39 AM"},{"user":"user","message":"hh","timestamp":"11:58:42 AM"},{"user":"bot","message":"entonces  onda,  ¿qué  tal  va","timestamp":"11:58:42 AM"},{"user":"user","message":"hola","timestamp":"11:58:48 AM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"11:58:48 AM"},{"user":"user","message":"hola","timestamp":"11:58:51 AM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"11:58:51 AM"},{"user":"user","message":"hola","timestamp":"12:29:04 PM"},{"user":"user","message":"hola","timestamp":"12:29:08 PM"},{"user":"user","message":"hola","timestamp":"12:29:14 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:15 PM"},{"user":"user","message":"hola","timestamp":"12:29:18 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:18 PM"},{"user":"user","message":"hola","timestamp":"12:29:20 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:21 PM"},{"user":"user","message":"hola","timestamp":"12:29:23 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:23 PM"},{"user":"user","message":"hola","timestamp":"12:29:25 PM"},{"user":"bot","message":"buen  día  ¿en  puedo","timestamp":"12:29:25 PM"}] 
-       let usuario=getGlobalData("usuario");
+        let dates = await getMessages();
         if (dates.length > 0) {
           setChatMessages(dates);
-          //console.log(dates)
         } else {
-          console.log("no tiene nada");
-          let welcome=[{"user":"bot","message":`Hola , bienvenido ${usuario}`,"timestamp": new Date().toLocaleTimeString()}]
-          setChatMessages(welcome)
+          let usuario = getGlobalData("usuario");
+          setChatMessages([{ user: "bot", message: `Hola, bienvenido ${usuario}`, timestamp: new Date().toLocaleTimeString() }]);
         }
       } catch (error) {
-        //console.error("Error fetching messages:", error);
+        console.error("Error fetching messages:", error);
       }
     };
-  
+
     fetchMessages();
   }, []);
-  
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>WiseMindAssistend</Text>
+    <ImageBackground 
+      source={require('./images/azul.jpeg')}  // Path to your local image
+      style={styles.container}
+    >
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Wise Mind Assistant</Text>
       </View>
       <ScrollView
-  ref={scrollViewRef}
-  contentContainerStyle={styles.scrollViewContent}
-  onContentSizeChange={() => scrollToBottom()}
->
-  {chatMessages.map((msg, index) => (
-    <View key={index} style={[styles.messageContainer, { alignSelf: msg.user === 'user' ? 'flex-end' : 'flex-start' }]}>
-      <Text style={[styles.messageText, { backgroundColor: msg.user === 'user' ? '#dcf8c6' : '#e5e5ea' }]}>
-        {msg.message}
-      </Text>
-      <Text style={styles.timestamp}>{msg.timestamp}</Text>
-    </View>
-  ))}
-  {isLoading && (
-    <View style={styles.loadingContainer}>
-      <Text style={styles.loadingText}>Pensando...</Text>
-    </View>
-  )}
-</ScrollView>
-
+        ref={scrollViewRef}
+        contentContainerStyle={styles.scrollViewContent}
+        onContentSizeChange={() => scrollToBottom()}
+      >
+        {chatMessages.map((msg, index) => (
+          <View
+            key={index}
+            style={[
+              styles.messageContainer,
+              { alignSelf: msg.user === 'user' ? 'flex-end' : 'flex-start' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.messageText,
+                { backgroundColor: msg.user === 'user' ? '#dcf8c6' : '#e5e5ea' },
+              ]}
+            >
+              {msg.message}
+            </Text>
+            <Text style={styles.timestamp}>{msg.timestamp}</Text>
+          </View>
+        ))}
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Pensando...</Text>
+          </View>
+        )}
+      </ScrollView>
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.textInput}
           onChangeText={setInputText}
           value={inputText}
           placeholder="Escribe un mensaje..."
-          placeholderTextColor="#A9A9A9"
+          placeholderTextColor="#AAAAAA"
         />
-        <Button title="Enviar" onPress={handleMessageSend} color="#25D366" />
+        <TouchableOpacity
+          onPress={handleMessageSend}
+          activeOpacity={0.8}
+        >
+          <Image
+            source={require('./images/enviar.png')}  // Path to your local image
+            style={styles.sendButtonImage}
+          />
+        </TouchableOpacity>
       </View>
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EAEAEA', // Light grey background
+    backgroundColor: '#4A90E2', // Soft blue
+    paddingHorizontal: 10,
+    paddingTop: 40, // Added some space from the top of the screen
   },
-  header: {
-    backgroundColor: '#075E54', // WhatsApp header color
-    padding: 15,
-    alignItems: 'center',
+  titleContainer: {
+    backgroundColor: '#4CAF50', // Green background for the title
+    padding: 15, // Adjust padding for better spacing
+    borderRadius: 10,
+    marginBottom: 20,
+    marginTop: 0, // Added marginTop to create space from the top
   },
-  headerText: {
-    color: '#FFFFFF',
-    fontSize: 20,
+  title: {
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#FFFFFF', // White text
+    textAlign: 'center',
   },
   scrollViewContent: {
     flexGrow: 1,
@@ -188,7 +174,6 @@ const styles = StyleSheet.create({
   messageContainer: {
     maxWidth: '80%',
     marginVertical: 5,
-    alignSelf: 'flex-start', // Align container to the start
   },
   messageText: {
     fontSize: 16,
@@ -201,28 +186,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#A9A9A9',
     marginTop: 5,
-    alignSelf: 'flex-end', // Align timestamp to the right
+    alignSelf: 'flex-end',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingBottom: 20,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 3,
-    borderTopColor: '#E5E5E5',
-    borderRadius: 30,
-    overflow: 'hidden', // To make the input and button rounded
+    paddingBottom: 10,
   },
   textInput: {
     flex: 1,
     height: 40,
-    borderColor: '#E5E5E5',
-    borderWidth: 1,
     marginRight: 10,
     paddingHorizontal: 10,
-    backgroundColor: '#F5F5F5',
     borderRadius: 20,
+    backgroundColor: '#FFFFFF', // White background for the input box
+    borderWidth: 1, // Visible border
+    borderColor: '#CCCCCC', // Border color
+    color: '#000000', // Black text
   },
   loadingContainer: {
     alignSelf: 'flex-start',
@@ -233,7 +213,23 @@ const styles = StyleSheet.create({
     color: '#A9A9A9',
     fontStyle: 'italic',
   },
-  
+  sendButton: {
+    backgroundColor: '#5856D6', // Blue button color
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  sendButtonImage: {
+    width: 50,  // Set the width of the image
+    height: 50, // Set the height of the image
+   // borderRadius: 25, // Half of the width and height to make it round
+    resizeMode: 'contain', // Ensure the image fits within the given dimensions
+  },
 });
 
 export default ChatApp;

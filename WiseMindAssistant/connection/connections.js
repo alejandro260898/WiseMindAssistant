@@ -149,4 +149,28 @@ export const databaseConnection=async(username,password)=>{
       return 0;
     }
   };
+
+  export async function getDates(){
+    try{ 
+      const usuario=getGlobalData("usuario")
+
+      const {data,error}=await supabase.from("users").select("username,password").eq("username",usuario)
+      
+
+      if(error){
+        console.log("was an error ")
+      }
+      if(data){
+        console.log("hay datos")
+        return data
+      }
+
+    }catch(e){
+      console.log("was an error",e)
+
+
+    }
+   
+
+  }
   
